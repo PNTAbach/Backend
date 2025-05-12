@@ -1,6 +1,7 @@
 package com.backend.pnta.Controllers;
 
 import com.backend.pnta.Models.User.Role;
+import com.backend.pnta.Repositories.UserRepository;
 import com.backend.pnta.Services.Statistics.StatisticsService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -29,6 +30,9 @@ public class StatisticsControllerTest {
 
     @MockBean
     private StatisticsService statisticsService;
+
+    @MockBean
+    private UserRepository userRepository;
 
     @Test
     void getTotalUsers_shouldReturnOk() throws Exception {
