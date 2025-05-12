@@ -2,7 +2,7 @@ package com.backend.pnta.Proxy.User;
 
 import com.backend.pnta.Exceptions.InsufficientPermissionsException;
 import com.backend.pnta.Models.User.UserUpdateDTO;
-import com.backend.pnta.Proxy.Authorization.AuthorizationService;
+import com.backend.pnta.Proxy.AuthorizationService;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;

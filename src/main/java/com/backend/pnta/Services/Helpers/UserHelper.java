@@ -4,6 +4,8 @@ package com.backend.pnta.Services.Helpers;
 import com.backend.pnta.Models.User.Role;
 import com.backend.pnta.Models.User.UserDto;
 import com.backend.pnta.Models.User.UserP;
+import com.backend.pnta.Models.UserVenue.AllUserVenueDTO;
+import com.backend.pnta.Models.UserVenue.UserPAndRoleVenueDTO;
 import com.backend.pnta.Repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -71,6 +73,21 @@ public class UserHelper {
                 .image(userEntity.getImage())
                 .birthDate(userEntity.getBirthDate())
                 .role(userEntity.getRole())
+                .build();
+    }
+
+    public AllUserVenueDTO convertToAllUserVenueDto(UserPAndRoleVenueDTO userPAndRoleVenueDTO) {
+        return AllUserVenueDTO.builder()
+                .userId(userPAndRoleVenueDTO.getUserP().getUserId())
+                .email(userPAndRoleVenueDTO.getUserP().getEmail())
+                .fName(userPAndRoleVenueDTO.getUserP().getfName())
+                .lName(userPAndRoleVenueDTO.getUserP().getlName())
+                .phoneNumber(userPAndRoleVenueDTO.getUserP().getPhoneNumber())
+                .phoneCountryCode(userPAndRoleVenueDTO.getUserP().getPhoneCountryCode())
+                .image(userPAndRoleVenueDTO.getUserP().getImage())
+                .birthDate(userPAndRoleVenueDTO.getUserP().getBirthDate())
+                .role(userPAndRoleVenueDTO.getUserP().getRole())
+                .venueRole(userPAndRoleVenueDTO.getVenueRole())
                 .build();
     }
 
