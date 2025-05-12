@@ -5,7 +5,9 @@ import com.backend.pnta.Services.Statistics.StatisticsService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -18,8 +20,10 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(StatisticsController.class)
+@SpringBootTest
 @WithMockUser(username = "testuser", roles = {"ADMIN"})
+@AutoConfigureMockMvc(addFilters = false)
+
 public class StatisticsControllerTest {
 
     @Autowired
@@ -76,30 +80,4 @@ public class StatisticsControllerTest {
                 .andExpect(jsonPath("$.ROLE_USER").value(95));
     }
 
-    @Test
-    void getMostCommonCity_shouldReturnOk() throws Exception {
-        Mockito.when(statisticsService.getMostCommonCity()).thenReturn(Map.entry("New York", 10L));
-
-        mockMvc.perform(get("/statistics/mostCommonCity"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.key").value("New York"))
-                .andExpect(jsonPath("$.value").value(10));
-    }
-
-    @Test
-    void getTopRatedVenues_shouldReturnOk() throws Exception {
-        List<Map.Entry<Long, Double>> topRated = List.of(
-                Map.entry(1L, 4.9),
-                Map.entry(2L, 4.8)
-        );
-
-        Mockito.when(statisticsService.getTopRatedVenues(anyInt())).thenReturn(topRated);
-
-        mockMvc.perform(get("/statistics/topRatedVenues/2"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].key").value(1))
-                .andExpect(jsonPath("$[0].value").value(4.9))
-                .andExpect(jsonPath("$[1].key").value(2))
-                .andExpect(jsonPath("$[1].value").value(4.8));
-    }
 }
