@@ -2,7 +2,6 @@ package com.backend.pnta.Controllers;
 
 import com.backend.pnta.Models.Event.EventCreateDTO;
 import com.backend.pnta.Models.Event.EventDTO;
-import com.backend.pnta.Models.Event.EventUpdateDTO;
 import com.backend.pnta.Services.Event.EventService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
