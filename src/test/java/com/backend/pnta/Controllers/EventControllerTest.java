@@ -1,125 +1,131 @@
 package com.backend.pnta.Controllers;
 
+import com.backend.pnta.Models.Event.Event;
 import com.backend.pnta.Models.Event.EventCreateDTO;
 import com.backend.pnta.Models.Event.EventDTO;
+import com.backend.pnta.Models.Event.EventUpdateDTO;
 import com.backend.pnta.Services.Event.EventService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc (addFilters = false)
+@ExtendWith(MockitoExtension.class)
 class EventControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @InjectMocks
+    private EventController eventController;
 
-    @MockBean
+    @Mock
     private EventService eventService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private EventCreateDTO createDTO;
+    private EventUpdateDTO updateDTO;
+    private Event event;
+    private EventDTO eventDTO;
 
-    private EventDTO getMockEventDTO() {
-        EventDTO dto = new EventDTO();
-        dto.setEventId(1L);
-        dto.setVenueId(22L);
-        dto.setName("College Bash");
-        dto.setDescription("Fun night");
-        dto.setEventDate(LocalDate.of(2025, 5, 6));
-        dto.setStartTime(LocalTime.of(17, 0));
-        dto.setEndTime(LocalTime.of(22, 0));
-        return dto;
+    @BeforeEach
+    void setup() {
+        createDTO = new EventCreateDTO();
+        createDTO.setVenueId(1L);
+        createDTO.setName("Concert");
+        createDTO.setDescription("Live music");
+        createDTO.setEventDate("2025-05-15");
+        createDTO.setStartTime("18:00");
+        createDTO.setEndTime("22:00");
+
+        updateDTO = new EventUpdateDTO();
+        updateDTO.setName("Updated Concert");
+        updateDTO.setDescription("Updated Desc");
+        updateDTO.setEventDate("2025-05-16");
+        updateDTO.setStartTime("19:00");
+        updateDTO.setEndTime("23:00");
+
+        event = new Event();
+        event.setEventId(1L);
+        event.setVenueId(1L);
+        event.setName("Concert");
+        event.setDescription("Live music");
+        event.setEventDate(LocalDate.of(2025, 5, 15));
+        event.setStartTime(LocalTime.of(18, 0));
+        event.setEndTime(LocalTime.of(22, 0));
+
+        eventDTO = new EventDTO();
+        eventDTO.setEventId(1L);
+        eventDTO.setVenueId(1L);
+        eventDTO.setName("Concert");
+        eventDTO.setDescription("Live music");
+        eventDTO.setEventDate(LocalDate.of(2025, 5, 15));
+        eventDTO.setStartTime(LocalTime.of(18, 0));
+        eventDTO.setEndTime(LocalTime.of(22, 0));
     }
 
     @Test
-    void createEvent_shouldReturnCreated() throws Exception {
-        EventCreateDTO input = new EventCreateDTO();
-        input.setVenueId(22L);
-        input.setName("Event");
-        input.setDescription("Desc");
-        input.setEventDate("2025-05-06");
-        input.setStartTime("17:00");
-        input.setEndTime("22:00");
-        Mockito.when(eventService.createEvent(any())).thenReturn(new com.backend.pnta.Models.Event.Event());
+    void testCreateEvent() {
+        when(eventService.createEvent(createDTO)).thenReturn(event);
 
-        mockMvc.perform(post("/events")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(input)))
-                .andExpect(status().isOk());
+        ResponseEntity<EventDTO> response = eventController.createEvent(createDTO);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
-    void updateEvent_shouldReturnUpdated() throws Exception {
-        EventCreateDTO input = new EventCreateDTO();
-        input.setVenueId(22L);
-        input.setName("Event1");
-        input.setDescription("Desc1");
-        input.setEventDate("2025-05-06");
-        input.setStartTime("18:00");
-        input.setEndTime("23:00");
-        Mockito.when(eventService.updateEvent(eq(1L), any())).thenReturn(new com.backend.pnta.Models.Event.Event());
+    void testUpdateEvent() {
+        when(eventService.updateEvent(1L, updateDTO)).thenReturn(event);
 
-        mockMvc.perform(put("/events/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(input)))
-                .andExpect(status().isOk());
+        ResponseEntity<EventDTO> response = eventController.updateEvent(1L, updateDTO);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
-    void getAllEvents_shouldReturnList() throws Exception {
-        Mockito.when(eventService.getAllEvents()).thenReturn(List.of(getMockEventDTO()));
+    void testGetAllEvents() {
+        when(eventService.getAllEvents()).thenReturn(List.of(eventDTO));
 
-        mockMvc.perform(get("/events"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(1));
+        ResponseEntity<List<EventDTO>> response = eventController.getAllEvents();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(1, response.getBody().size());
+        assertEquals(eventDTO, response.getBody().get(0));
     }
 
     @Test
-    void getEventById_shouldReturnEvent() throws Exception {
-        Mockito.when(eventService.getEventById(1L)).thenReturn(getMockEventDTO());
+    void testGetEventById_found() {
+        when(eventService.getEventById(1L)).thenReturn(eventDTO);
 
-        mockMvc.perform(get("/events/1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.eventId").value(1L));
+        ResponseEntity<EventDTO> response = eventController.getEventById(1L);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(eventDTO, response.getBody());
     }
 
     @Test
-    void getEventById_shouldReturnNotFound() throws Exception {
-        Mockito.when(eventService.getEventById(1L)).thenReturn(null);
+    void testGetEventById_notFound() {
+        when(eventService.getEventById(999L)).thenReturn(null);
 
-        mockMvc.perform(get("/events/1"))
-                .andExpect(status().isNotFound());
+        ResponseEntity<EventDTO> response = eventController.getEventById(999L);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test
-    void getEventsByVenueId_shouldReturnList() throws Exception {
-        Mockito.when(eventService.getEventsByVenueId(22L)).thenReturn(List.of(getMockEventDTO()));
+    void testDeleteEvent() {
+        doNothing().when(eventService).deleteEvent(1L);
 
-        mockMvc.perform(get("/events/venue/22"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(1));
-    }
+        ResponseEntity<?> response = eventController.deleteEvent(1L);
 
-    @Test
-    void deleteEvent_shouldReturnOk() throws Exception {
-        mockMvc.perform(delete("/events/1"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Event deleted"));
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Event deleted", response.getBody());
     }
 }

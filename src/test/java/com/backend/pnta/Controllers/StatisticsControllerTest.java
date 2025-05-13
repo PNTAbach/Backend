@@ -1,85 +1,103 @@
 package com.backend.pnta.Controllers;
 
 import com.backend.pnta.Models.User.Role;
-import com.backend.pnta.Repositories.UserRepository;
 import com.backend.pnta.Services.Statistics.StatisticsService;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@SpringBootTest
-@WithMockUser(username = "testuser", roles = {"ADMIN"})
-@AutoConfigureMockMvc(addFilters = false)
+@ExtendWith(MockitoExtension.class)
+class StatisticsControllerTest {
 
-public class StatisticsControllerTest {
+    @InjectMocks
+    private StatisticsController statisticsController;
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
+    @Mock
     private StatisticsService statisticsService;
 
-    @MockBean
-    private UserRepository userRepository;
-
     @Test
-    void getTotalUsers_shouldReturnOk() throws Exception {
-        Mockito.when(statisticsService.getTotalUsers()).thenReturn(100L);
+    void getTotalUsers_shouldReturnOk() {
+        when(statisticsService.getTotalUsers()).thenReturn(100L);
 
-        mockMvc.perform(get("/statistics/totalUsers"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("100"));
+        ResponseEntity<Long> response = statisticsController.getTotalUsers();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(100L, response.getBody());
     }
 
     @Test
-    void getTotalLocations_shouldReturnOk() throws Exception {
-        Mockito.when(statisticsService.getTotalLocations()).thenReturn(50L);
+    void getTotalLocations_shouldReturnOk() {
+        when(statisticsService.getTotalLocations()).thenReturn(50L);
 
-        mockMvc.perform(get("/statistics/totalLocations"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("50"));
+        ResponseEntity<Long> response = statisticsController.getTotalLocations();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(50L, response.getBody());
     }
 
     @Test
-    void getTotalVenues_shouldReturnOk() throws Exception {
-        Mockito.when(statisticsService.getTotalVenues()).thenReturn(25L);
+    void getTotalVenues_shouldReturnOk() {
+        when(statisticsService.getTotalVenues()).thenReturn(25L);
 
-        mockMvc.perform(get("/statistics/totalVenues"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("25"));
+        ResponseEntity<Long> response = statisticsController.getTotalVenues();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(25L, response.getBody());
     }
 
     @Test
-    void getAverageVenueRating_shouldReturnOk() throws Exception {
-        Mockito.when(statisticsService.getAverageVenueRating()).thenReturn(4.5);
+    void getAverageVenueRating_shouldReturnOk() {
+        when(statisticsService.getAverageVenueRating()).thenReturn(4.5);
 
-        mockMvc.perform(get("/statistics/averageVenueRating"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("4.5"));
+        ResponseEntity<Double> response = statisticsController.getAverageVenueRating();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(4.5, response.getBody());
     }
 
     @Test
-    void getUsersCountByRole_shouldReturnOk() throws Exception {
-        Mockito.when(statisticsService.getUsersCountByRole()).thenReturn(
-                Map.of(Role.ROLE_ADMIN, 5L, Role.ROLE_USER, 95L)
+    void getUsersCountByRole_shouldReturnOk() {
+        Map<Role, Long> expected = Map.of(Role.ROLE_ADMIN, 5L, Role.ROLE_USER, 95L);
+        when(statisticsService.getUsersCountByRole()).thenReturn(expected);
+
+        ResponseEntity<?> response = statisticsController.getUsersCountByRole();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(expected, response.getBody());
+    }
+
+    @Test
+    void getMostCommonCity_shouldReturnOk() {
+        Map.Entry<String, Long> expected = Map.entry("New York", 10L);
+        when(statisticsService.getMostCommonCity()).thenReturn(expected);
+
+        ResponseEntity<Map.Entry<String, Long>> response = statisticsController.getMostCommonCity();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(expected, response.getBody());
+    }
+
+    @Test
+    void getTopRatedVenues_shouldReturnOk() {
+        List<Map.Entry<Long, Double>> expected = List.of(
+                Map.entry(1L, 4.9),
+                Map.entry(2L, 4.8)
         );
+        when(statisticsService.getTopRatedVenues(2)).thenReturn(expected);
 
-        mockMvc.perform(get("/statistics/usersCountByRole"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.ROLE_ADMIN").value(5))
-                .andExpect(jsonPath("$.ROLE_USER").value(95));
+        ResponseEntity<List<Map.Entry<Long, Double>>> response = statisticsController.getTopRatedVenues(2);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(expected, response.getBody());
     }
-
 }

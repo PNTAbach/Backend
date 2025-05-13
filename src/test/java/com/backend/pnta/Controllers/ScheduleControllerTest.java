@@ -4,107 +4,102 @@ import com.backend.pnta.Models.Venues.Schedule.GetScheduleDTO;
 import com.backend.pnta.Models.Venues.Schedule.ScheduleDTO;
 import com.backend.pnta.Models.Venues.Schedule.UpdateScheduleDTO;
 import com.backend.pnta.Services.Venues.Schedule.ScheduleService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.mockito.Mockito.*;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+@ExtendWith(MockitoExtension.class)
+class ScheduleControllerTest {
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@WithMockUser(username = "testuser", roles = {"USER"})
-public class ScheduleControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
+    @Mock
     private ScheduleService scheduleService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @InjectMocks
+    private ScheduleController scheduleController;
+
+    private final ScheduleDTO scheduleDTO = new ScheduleDTO();
+    private final UpdateScheduleDTO updateDTO = new UpdateScheduleDTO();
+    private final GetScheduleDTO responseDTO = new GetScheduleDTO();
 
     @Test
-    void addSchedule_shouldReturnCreated() throws Exception {
-        ScheduleDTO scheduleDTO = new ScheduleDTO();
-        GetScheduleDTO response = new GetScheduleDTO();
-        Mockito.when(scheduleService.saveSchedule(any(), anyLong())).thenReturn(response);
+    void addSchedule_shouldReturnCreated() {
+        when(scheduleService.saveSchedule(eq(scheduleDTO), eq(1L))).thenReturn(responseDTO);
 
-        mockMvc.perform(post("/schedules")
-                        .param("venueId", "1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(scheduleDTO)))
-                .andExpect(status().isCreated());
+        ResponseEntity<?> response = scheduleController.addSchedule(scheduleDTO, 1L);
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(responseDTO, response.getBody());
     }
 
     @Test
-    void updateSchedule_shouldReturnOk() throws Exception {
-        UpdateScheduleDTO updateDTO = new UpdateScheduleDTO();
-        GetScheduleDTO response = new GetScheduleDTO();
-        Mockito.when(scheduleService.updateSchedule(any(), eq(1L))).thenReturn(response);
+    void updateSchedule_shouldReturnOk() {
+        when(scheduleService.updateSchedule(eq(updateDTO), eq(1L))).thenReturn(responseDTO);
 
-        mockMvc.perform(put("/schedules/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDTO)))
-                .andExpect(status().isOk());
+        ResponseEntity<?> response = scheduleController.updateSchedule(updateDTO, 1L);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(responseDTO, response.getBody());
     }
 
     @Test
-    void deleteSchedule_shouldReturnOk() throws Exception {
-        mockMvc.perform(delete("/schedules/1"))
-                .andExpect(status().isOk());
-        Mockito.verify(scheduleService).deleteSchedule(1L);
+    void deleteSchedule_shouldReturnOk() {
+        doNothing().when(scheduleService).deleteSchedule(1L);
+
+        ResponseEntity<?> response = scheduleController.deleteSchedule(1L);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(null, response.getBody());
     }
 
     @Test
-    void getSchedulesByVenueId_shouldReturnOk() throws Exception {
-        List<GetScheduleDTO> list = List.of(new GetScheduleDTO());
-        Mockito.when(scheduleService.getScheduleByVenue(1L)).thenReturn(list);
+    void getSchedulesByVenueId_shouldReturnOk() {
+        List<GetScheduleDTO> list = List.of(responseDTO);
+        when(scheduleService.getScheduleByVenue(1L)).thenReturn(list);
 
-        mockMvc.perform(get("/schedules/venue/1"))
-                .andExpect(status().isOk());
+        ResponseEntity<?> response = scheduleController.getSchedulesByVenueId(1L);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(list, response.getBody());
     }
 
     @Test
-    void getSchedulesByVenueId_shouldReturnNotFound() throws Exception {
-        Mockito.when(scheduleService.getScheduleByVenue(1L)).thenReturn(Collections.emptyList());
+    void getSchedulesByVenueId_shouldReturnNotFound() {
+        when(scheduleService.getScheduleByVenue(1L)).thenReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/schedules/venue/1"))
-                .andExpect(status().isNotFound());
+        ResponseEntity<?> response = scheduleController.getSchedulesByVenueId(1L);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals(null, response.getBody());
     }
 
     @Test
-    void getScheduleById_shouldReturnOk() throws Exception {
-        GetScheduleDTO schedule = new GetScheduleDTO();
-        Mockito.when(scheduleService.getScheduleById(1L)).thenReturn(schedule);
+    void getScheduleById_shouldReturnOk() {
+        when(scheduleService.getScheduleById(1L)).thenReturn(responseDTO);
 
-        mockMvc.perform(get("/schedules/1"))
-                .andExpect(status().isOk());
+        ResponseEntity<?> response = scheduleController.getScheduleById(1L);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(responseDTO, response.getBody());
     }
 
     @Test
-    void getScheduleById_shouldReturnNotFound() throws Exception {
-        Mockito.when(scheduleService.getScheduleById(1L)).thenReturn(null);
+    void getScheduleById_shouldReturnNotFound() {
+        when(scheduleService.getScheduleById(1L)).thenReturn(null);
 
-        mockMvc.perform(get("/schedules/1"))
-                .andExpect(status().isNotFound());
+        ResponseEntity<?> response = scheduleController.getScheduleById(1L);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals(null, response.getBody());
     }
 }

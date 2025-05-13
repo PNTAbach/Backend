@@ -2,93 +2,116 @@ package com.backend.pnta.Controllers;
 
 import com.backend.pnta.Models.UserVenue.AllUserVenueDTO;
 import com.backend.pnta.Services.UserVenue.UserVenueService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
-import static org.mockito.Mockito.doNothing;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc(addFilters = false)
-@WithMockUser(username = "testuser", roles = {"ADMIN"})
-
+@ExtendWith(MockitoExtension.class)
 class UserVenueControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @InjectMocks
+    private UserVenueController userVenueController;
 
-    @MockBean
+    @Mock
     private UserVenueService userVenueService;
+
+    @Mock
+    private HttpServletRequest request;
 
     private final String token = "Bearer mock-token";
 
+    @BeforeEach
+    void injectRequest() throws Exception {
+        Field requestField = UserVenueController.class.getDeclaredField("request");
+        requestField.setAccessible(true);
+        requestField.set(userVenueController, request);
+    }
+
     @Test
-    void addVenueWorker_shouldReturnOk() throws Exception {
+    void addVenueWorker_shouldReturnOk() {
+        when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(token);
         doNothing().when(userVenueService).addVenueWorker(1L, 2L);
 
-        mockMvc.perform(post("/manageUserVenue/addVenueWorker/1/2")
-                        .header(HttpHeaders.AUTHORIZATION, token))
-                .andExpect(status().isOk())
-                .andExpect(content().string("User 1 added to your venue!"));
+        ResponseEntity<?> response = userVenueController.addVenueWorker(1L, 2L);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("User 1 added to your venue!", response.getBody());
     }
 
     @Test
-    void deleteVenueWorker_shouldReturnOk() throws Exception {
+    void deleteVenueWorker_shouldReturnOk() {
+        when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(token);
         doNothing().when(userVenueService).deleteVenueWorkers(1L, 2L);
 
-        mockMvc.perform(delete("/manageUserVenue/removeVenueUser/1/2")
-                        .header(HttpHeaders.AUTHORIZATION, token))
-                .andExpect(status().isOk())
-                .andExpect(content().string("User 1 removed from your venue!"));
-    }
+        ResponseEntity<?> response = userVenueController.deleteVenueWorkers(1L, 2L);
 
-    @WithMockUser(username = "testuser", roles = {"ADMIN"})
-    @Test
-    void getVenueWorkers_shouldReturnOk() throws Exception {
-
-        List<AllUserVenueDTO> mockedList = List.of(new AllUserVenueDTO());
-        Mockito.when(userVenueService.getVenueWorkers(2L)).thenReturn(mockedList);
-
-        mockMvc.perform(get("/manageUserVenue/getVenueWorkers/2")
-                        .header(HttpHeaders.AUTHORIZATION, token))
-                .andExpect(status().isOk());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("User 1 removed from your venue!", response.getBody());
     }
 
     @Test
-    void setVenueManager_shouldReturnOk() throws Exception {
+    void getVenueWorkers_shouldReturnOk() {
+        List<AllUserVenueDTO> mockList = List.of(new AllUserVenueDTO());
+        when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(token);
+        when(userVenueService.getVenueWorkers(2L)).thenReturn(mockList);
+
+        ResponseEntity<?> response = userVenueController.getVenueWorkers(2L);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(mockList, response.getBody());
+    }
+
+    @Test
+    void setVenueManager_shouldReturnOk() {
+        when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(token);
         doNothing().when(userVenueService).setVenueManager("mock-token", 1L, 2L);
 
-        mockMvc.perform(put("/manageUserVenue/setVenueManager/1/2")
-                        .header(HttpHeaders.AUTHORIZATION, token))
-                .andExpect(status().isOk())
-                .andExpect(content().string("User successfully set as venue manager."));
+        ResponseEntity<?> response = userVenueController.setVenueManager(1L, 2L);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("User successfully set as venue manager.", response.getBody());
     }
 
     @Test
-    void setVenueStaff_shouldReturnOk() throws Exception {
+    void setVenueStaff_shouldReturnOk() {
         doNothing().when(userVenueService).setVenueStaff("mock-token", 1L, 2L);
 
-        mockMvc.perform(put("/manageUserVenue/setVenueStaff/1/2")
-                        .header(HttpHeaders.AUTHORIZATION, token))
-                .andExpect(status().isOk())
-                .andExpect(content().string("User successfully set as venue staff."));
+        ResponseEntity<?> response = userVenueController.setVenueStaff(1L, 2L, "Bearer mock-token");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("User successfully set as venue staff.", response.getBody());
     }
 
     @Test
-    void addVenueWorker_shouldReturnUnauthorized_whenTokenMissing() throws Exception {
-        mockMvc.perform(post("/manageUserVenue/addVenueWorker/1/2"))
-                .andExpect(status().isUnauthorized());
+    void addVenueWorker_shouldReturnUnauthorized_whenTokenMissing() {
+        when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
+
+        ResponseEntity<?> response = userVenueController.addVenueWorker(1L, 2L);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("Missing or invalid token", response.getBody());
+    }
+
+    @Test
+    void deleteVenueWorker_shouldReturnUnauthorized_whenTokenMissing() {
+        when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
+
+        ResponseEntity<?> response = userVenueController.deleteVenueWorkers(1L, 2L);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("Missing or invalid token", response.getBody());
     }
 }

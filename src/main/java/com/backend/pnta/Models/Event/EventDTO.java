@@ -14,4 +14,5 @@ public class EventDTO {
     private LocalDate eventDate;
     private LocalTime startTime;
     private LocalTime endTime;
+    private LocalTime createdAt;
 }

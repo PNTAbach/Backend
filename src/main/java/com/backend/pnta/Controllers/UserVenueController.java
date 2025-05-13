@@ -23,9 +23,19 @@ public class UserVenueController {
         return handleSetVenueRole(targetUserId, venueId, "manager");
     }
 
-    @PutMapping("/setVenueStaff/{targetUserId}/{venueId}")
-    public ResponseEntity<?> setVenueStaff(@PathVariable Long targetUserId, @PathVariable Long venueId) {
-        return handleSetVenueRole(targetUserId, venueId, "staff");
+    @PutMapping("/setVenueStaff/{userId}/{venueId}")
+    public ResponseEntity<?> setVenueStaff(
+            @PathVariable Long userId,
+            @PathVariable Long venueId,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or invalid token");
+        }
+
+        token = token.substring("Bearer ".length());
+        userVenueService.setVenueStaff(token, userId, venueId);
+        return ResponseEntity.ok("User successfully set as venue staff.");
     }
     @GetMapping("/getVenueWorkers/{venueId}")
     public ResponseEntity<?> getVenueWorkers(@PathVariable Long venueId) {
