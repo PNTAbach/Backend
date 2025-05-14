@@ -1,0 +1,17 @@
+How to work in docker container with localhost database(image).
+Create user in swagger (localhost db always will be 0)
+in docker terminal run:
+docker ps
+
+docker exec -it backend-db-1 bash
+
+psql -U postgres -d postgres
+
+
+verify user creation
+SELECT user_id, role FROM userp;
+
+update role
+UPDATE userp
+SET role = 'ROLE_ADMIN'
+WHERE id = 1;
