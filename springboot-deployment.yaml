@@ -19,11 +19,11 @@ spec:
             - containerPort: 8080
           env:
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://postgres-service:5432/postgres
+              value: jdbc:postgresql://aws-0-eu-north-1.pooler.supabase.com:5432/postgres
             - name: SPRING_DATASOURCE_USERNAME
-              value: postgres
+              value: postgres.wrcyhszdmxtwvkfgqntz
             - name: SPRING_DATASOURCE_PASSWORD
-              value: "1234"
+              value: Admin12344*
 ---
 apiVersion: v1
 kind: Service
