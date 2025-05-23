@@ -21,7 +21,7 @@ public class UserAuthorizationAspectU {
 
     @Around(ADD_UPDATE_VENUE_POINTCUT)
     public Object authorize(ProceedingJoinPoint joinPoint) throws Throwable {
-        // Token shit
+        // Token
         String token = authorizationService.extractToken();
         Long userId = authorizationService.getUserIdFromToken(token);
 
