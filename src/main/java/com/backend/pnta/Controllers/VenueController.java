@@ -43,17 +43,13 @@ public class VenueController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or invalid token");
             }
 
-            // Remove "Bearer " prefix from the token
             token = token.substring("Bearer ".length());
             System.out.println("Received token: " + token);
 
-            // Call the service method to get venue info by token
             AllVenueInfo venueInfo = venueService.getVenueByToken(token);
 
-            // Log the returned venue info
             System.out.println("Fetched venue info: " + venueInfo);
 
-            // Return the venue info
             return ResponseEntity.ok(venueInfo);
         } catch (RuntimeException e) {
             System.out.println("Runtime exception occurred: " + e.getMessage());

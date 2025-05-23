@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class UserVenueLikeServiceImpl implements UserVenueLikeService {
     private final UserVenueLikeRepository userVenueLikeRepository;
     private final AuthHelper authHelper;
-    private final UserRepository userPRepository;
+    private final UserRepository userRepository;
     private final VenueRepository venueRepository;
 
     @Override
@@ -32,7 +32,7 @@ public class UserVenueLikeServiceImpl implements UserVenueLikeService {
             throw new IllegalArgumentException("Invalid like type");
         }
         long userId =authHelper.getUserIdFromToken(token);
-        UserP userP = userPRepository.findById(userId)
+        UserP userP = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         Venue venue = venueRepository.findById(userVenueLikeCreateDTO.getVenueId())
                 .orElseThrow(() -> new IllegalArgumentException("Venue not found"));
@@ -55,7 +55,7 @@ public class UserVenueLikeServiceImpl implements UserVenueLikeService {
     @Override
     public void removeLikeFromVenue(Long venueId, String token) {
         long userId = authHelper.getUserIdFromToken(token);
-        UserP userP = userPRepository.findById(userId)
+        UserP userP = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         Venue venue = venueRepository.findById(venueId)
                 .orElseThrow(() -> new IllegalArgumentException("Venue not found"));
